@@ -1,6 +1,6 @@
 'use client'
 
-import { CalendarPlus, Sparkles, X } from 'lucide-react'
+import { CalendarPlus, Sparkles } from 'lucide-react'
 import {
   classifyHonors,
   formatGwa,
@@ -16,15 +16,6 @@ import { HonorBadge } from '@/components/honor-badge'
 
 interface YearSectionProps {
   year: Year
-  /** Whether to show the "Year" card wrapper/heading/GWA controls at all. */
-  chromeVisible: boolean
-  /** Whether to show an editable "Year N" number, vs. the bare "Year" label. */
-  numbered: boolean
-  canRemove: boolean
-  onLabelChange: (label: string) => void
-  /** Fired when the label input loses focus — years get re-sorted by number here. */
-  onLabelBlur: () => void
-  onRemove: () => void
   onAddSemester: () => void
   onSemesterRemove: (semesterId: string) => void
   onCourseAdd: (semesterId: string) => void
@@ -38,14 +29,12 @@ interface YearSectionProps {
   onYearManualGwaRemove: () => void
 }
 
+// No more "Year" card wrapper — a year's contents (its GWA section and
+// semesters) render flat. Switching/renaming/removing years now happens
+// entirely through the year tabs above, so this component doesn't need
+// that chrome duplicated inside it.
 export function YearSection({
   year,
-  chromeVisible,
-  numbered,
-  canRemove,
-  onLabelChange,
-  onLabelBlur,
-  onRemove,
   onAddSemester,
   onSemesterRemove,
   onCourseAdd,
@@ -64,90 +53,23 @@ export function YearSection({
   const nextKind = SEMESTER_ORDER.find((kind) => !year.semesters.some((s) => s.kind === kind))
   const canAddSemester = !isManual && nextKind !== undefined
   const semestersEmpty = year.semesters.every((s) => s.courses.length === 0 && s.manualGwa === null)
-  const canAddYearGwa = chromeVisible && !isManual && semestersEmpty
+  const canAddYearGwa = !isManual && semestersEmpty
   const showOrdinalSemesters = year.semesters.length > 1
 
-  const semesterList = (
-    <div className="space-y-3">
-      {year.semesters.map((semester) => (
-        <SemesterSection
-          key={semester.id}
-          semester={semester}
-          showOrdinal={showOrdinalSemesters}
-          canRemove={year.semesters.length > 1}
-          onRemove={() => onSemesterRemove(semester.id)}
-          onCourseAdd={() => onCourseAdd(semester.id)}
-          onCourseChange={(courseId, patch) => onCourseChange(semester.id, courseId, patch)}
-          onCourseRemove={(courseId) => onCourseRemove(semester.id, courseId)}
-          onManualGwaAdd={() => onSemesterManualGwaAdd(semester.id)}
-          onManualGwaChange={(patch) => onSemesterManualGwaChange(semester.id, patch)}
-          onManualGwaRemove={() => onSemesterManualGwaRemove(semester.id)}
-        />
-      ))}
-    </div>
-  )
-
-  if (!chromeVisible) {
-    return (
-      <div className="space-y-3">
-        {semesterList}
-        {canAddSemester && (
-          <button
-            type="button"
-            onClick={onAddSemester}
-            className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-border bg-background px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary"
-          >
-            <CalendarPlus className="size-4" aria-hidden="true" />
-            Add semester
-          </button>
-        )}
-      </div>
-    )
-  }
-
   return (
-    <section className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-baseline gap-2">
-          <h3 className="font-serif text-lg font-semibold text-foreground">Year</h3>
-          {numbered && (
-            <input
-              type="text"
-              value={year.label}
-              onChange={(e) => onLabelChange(e.target.value)}
-              onBlur={onLabelBlur}
-              aria-label="Year number"
-              className="w-14 rounded-md border border-input bg-background px-2 py-1 text-center font-serif text-lg font-semibold text-foreground outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
-            />
-          )}
-          {!isManual && (
-            <span className="text-sm text-muted-foreground">
-              Year GWA{' '}
-              <span className="font-semibold tabular-nums text-foreground">{formatGwa(gwa)}</span>
-            </span>
-          )}
-        </div>
-        {canRemove && (
-          <button
-            type="button"
-            onClick={onRemove}
-            aria-label="Remove year"
-            className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-destructive"
-          >
-            <X className="size-4" aria-hidden="true" />
-          </button>
-        )}
-      </div>
-
-      {gwa !== null && (
-        <div className="mt-3">
-          <HonorBadge title={honor.title} range={honor.range} note={honor.note} tone={honor.tone} compact />
-        </div>
+    <div className="space-y-3">
+      {!isManual && gwa !== null && (
+        <p className="text-sm text-muted-foreground">
+          Year GWA <span className="font-semibold tabular-nums text-foreground">{formatGwa(gwa)}</span>
+        </p>
       )}
 
-      {/* Year GWA is always its own separate boxed section, styled like a semester card. */}
+      {gwa !== null && (
+        <HonorBadge title={honor.title} range={honor.range} note={honor.note} tone={honor.tone} compact />
+      )}
+
       {(isManual || canAddYearGwa) && (
-        <div className="mt-4 rounded-xl border border-border bg-secondary/40 p-3 sm:p-4">
+        <div className="rounded-xl border border-border bg-secondary/40 p-3 sm:p-4">
           <h4 className="font-serif text-base font-semibold text-foreground">Year GWA</h4>
           <div className="mt-3">
             {isManual && year.manualGwa ? (
@@ -172,10 +94,23 @@ export function YearSection({
         </div>
       )}
 
-      {/* Semesters live below the Year GWA section. */}
       {!isManual && (
-        <div className="mt-3 space-y-3">
-          {semesterList}
+        <div className="space-y-3">
+          {year.semesters.map((semester) => (
+            <SemesterSection
+              key={semester.id}
+              semester={semester}
+              showOrdinal={showOrdinalSemesters}
+              canRemove={year.semesters.length > 1}
+              onRemove={() => onSemesterRemove(semester.id)}
+              onCourseAdd={() => onCourseAdd(semester.id)}
+              onCourseChange={(courseId, patch) => onCourseChange(semester.id, courseId, patch)}
+              onCourseRemove={(courseId) => onCourseRemove(semester.id, courseId)}
+              onManualGwaAdd={() => onSemesterManualGwaAdd(semester.id)}
+              onManualGwaChange={(patch) => onSemesterManualGwaChange(semester.id, patch)}
+              onManualGwaRemove={() => onSemesterManualGwaRemove(semester.id)}
+            />
+          ))}
           {canAddSemester && (
             <button
               type="button"
@@ -188,6 +123,6 @@ export function YearSection({
           )}
         </div>
       )}
-    </section>
+    </div>
   )
 }

@@ -106,10 +106,6 @@ export function GwaCalculator() {
     [years],
   )
 
-  // A "Year" wrapper only becomes visible once there's real multi-year or
-  // multi-semester structure — before that, the lone semester is shown bare.
-  const showYearChrome = years.length > 1 || years[0].semesters.length > 1
-
   const activeYear = years.find((y) => y.id === activeYearId) ?? years[0]
 
   // --- Year-level actions ---
@@ -314,25 +310,30 @@ export function GwaCalculator() {
               return (
                 <div
                   key={year.id}
-                  className={`inline-flex items-center overflow-hidden rounded-lg border transition-colors ${
+                  onClick={() => setActiveYearId(year.id)}
+                  className={`inline-flex cursor-pointer items-center overflow-hidden rounded-lg border transition-colors ${
                     active
                       ? 'border-primary bg-primary text-primary-foreground shadow-sm'
                       : 'border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground'
                   }`}
                 >
-                  <button
-                    role="tab"
-                    type="button"
-                    aria-selected={active}
-                    onClick={() => setActiveYearId(year.id)}
-                    className="py-2 pl-3.5 pr-2 text-sm font-medium"
-                  >
-                    {`Year ${year.label}`}
-                  </button>
+                  <span className="py-2 pl-3.5 pr-1 text-sm font-medium">Year</span>
+                  <input
+                    type="text"
+                    value={year.label}
+                    onFocus={() => setActiveYearId(year.id)}
+                    onChange={(e) => changeYearLabel(year.id, e.target.value)}
+                    onBlur={commitYearOrder}
+                    aria-label={`Year ${year.label} number`}
+                    className="w-8 bg-transparent py-2 text-sm font-medium outline-none"
+                  />
                   <button
                     type="button"
                     aria-label={`Remove Year ${year.label}`}
-                    onClick={() => removeYear(year.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeYear(year.id)
+                    }}
                     className={`mr-1.5 flex size-5 items-center justify-center rounded-md transition-colors ${
                       active ? 'hover:bg-primary-foreground/20' : 'hover:bg-destructive/10 hover:text-destructive'
                     }`}
@@ -349,12 +350,6 @@ export function GwaCalculator() {
           <YearSection
             key={activeYear.id}
             year={activeYear}
-            chromeVisible={showYearChrome}
-            numbered={years.length > 1}
-            canRemove={years.length > 1}
-            onLabelChange={(label) => changeYearLabel(activeYear.id, label)}
-            onLabelBlur={commitYearOrder}
-            onRemove={() => removeYear(activeYear.id)}
             onAddSemester={() => addSemester(activeYear.id)}
             onSemesterRemove={(semesterId) => removeSemester(activeYear.id, semesterId)}
             onCourseAdd={(semesterId) => addCourse(activeYear.id, semesterId)}
