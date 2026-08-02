@@ -145,29 +145,32 @@ export function YearSection({
         </div>
       )}
 
-      {/* Year GWA is always its own section at the top. */}
-      <div className="mt-4">
-        {isManual && year.manualGwa ? (
-          <ManualGwaEntryField
-            idPrefix={year.id}
-            label="Year GWA"
-            value={year.manualGwa}
-            onChange={onYearManualGwaChange}
-            onRemove={onYearManualGwaRemove}
-          />
-        ) : (
-          canAddYearGwa && (
-            <button
-              type="button"
-              onClick={onYearManualGwaAdd}
-              className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-border bg-background px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary"
-            >
-              <Sparkles className="size-4" aria-hidden="true" />
-              Add GWA
-            </button>
-          )
-        )}
-      </div>
+      {/* Year GWA is always its own separate boxed section, styled like a semester card. */}
+      {(isManual || canAddYearGwa) && (
+        <div className="mt-4 rounded-xl border border-border bg-secondary/40 p-3 sm:p-4">
+          <h4 className="font-serif text-base font-semibold text-foreground">Year GWA</h4>
+          <div className="mt-3">
+            {isManual && year.manualGwa ? (
+              <ManualGwaEntryField
+                idPrefix={year.id}
+                label="Year GWA"
+                value={year.manualGwa}
+                onChange={onYearManualGwaChange}
+                onRemove={onYearManualGwaRemove}
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={onYearManualGwaAdd}
+                className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-border bg-background px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary"
+              >
+                <Sparkles className="size-4" aria-hidden="true" />
+                Add GWA
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Semesters live below the Year GWA section. */}
       {!isManual && (
