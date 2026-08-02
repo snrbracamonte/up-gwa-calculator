@@ -4,6 +4,7 @@ import { CalendarPlus, Sparkles } from 'lucide-react'
 import {
   classifyHonors,
   formatGwa,
+  formatYearLabel,
   getYearGwa,
   SEMESTER_ORDER,
   type Course,
@@ -29,10 +30,9 @@ interface YearSectionProps {
   onYearManualGwaRemove: () => void
 }
 
-// No more "Year" card wrapper — a year's contents (its GWA section and
-// semesters) render flat. Switching/renaming/removing years now happens
-// entirely through the year tabs above, so this component doesn't need
-// that chrome duplicated inside it.
+// Switching/renaming/removing years happens through the year tabs above, so
+// this component only needs the year's own contents: its GWA card (always
+// present, formatted the same way as a semester card) and its semesters.
 export function YearSection({
   year,
   onAddSemester,
@@ -54,33 +54,40 @@ export function YearSection({
   const canAddSemester = !isManual && nextKind !== undefined
   const semestersEmpty = year.semesters.every((s) => s.courses.length === 0 && s.manualGwa === null)
   const canAddYearGwa = !isManual && semestersEmpty
-  const showOrdinalSemesters = year.semesters.length > 1
+  const label = formatYearLabel(year.label)
 
   return (
     <div className="space-y-3">
-      {!isManual && gwa !== null && (
-        <p className="text-sm text-muted-foreground">
-          Year GWA <span className="font-semibold tabular-nums text-foreground">{formatGwa(gwa)}</span>
-        </p>
-      )}
+      {/* Year GWA card — always present, same format as a semester card. */}
+      <div className="rounded-xl border border-border bg-secondary/40 p-3 sm:p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h4 className="font-serif text-base font-semibold text-foreground">{label}</h4>
+          {!isManual && (
+            <span className="text-xs text-muted-foreground">
+              Year GWA <span className="font-semibold tabular-nums text-foreground">{formatGwa(gwa)}</span>
+            </span>
+          )}
+        </div>
 
-      {gwa !== null && (
-        <HonorBadge title={honor.title} range={honor.range} note={honor.note} tone={honor.tone} compact />
-      )}
+        {gwa !== null && (
+          <div className="mt-2">
+            <HonorBadge title={honor.title} range={honor.range} note={honor.note} tone={honor.tone} compact />
+          </div>
+        )}
 
-      {(isManual || canAddYearGwa) && (
-        <div className="rounded-xl border border-border bg-secondary/40 p-3 sm:p-4">
-          <h4 className="font-serif text-base font-semibold text-foreground">Year GWA</h4>
+        {isManual && year.manualGwa ? (
           <div className="mt-3">
-            {isManual && year.manualGwa ? (
-              <ManualGwaEntryField
-                idPrefix={year.id}
-                label="Year GWA"
-                value={year.manualGwa}
-                onChange={onYearManualGwaChange}
-                onRemove={onYearManualGwaRemove}
-              />
-            ) : (
+            <ManualGwaEntryField
+              idPrefix={year.id}
+              label="Year GWA"
+              value={year.manualGwa}
+              onChange={onYearManualGwaChange}
+              onRemove={onYearManualGwaRemove}
+            />
+          </div>
+        ) : (
+          canAddYearGwa && (
+            <div className="mt-3">
               <button
                 type="button"
                 onClick={onYearManualGwaAdd}
@@ -89,10 +96,10 @@ export function YearSection({
                 <Sparkles className="size-4" aria-hidden="true" />
                 Add GWA
               </button>
-            )}
-          </div>
-        </div>
-      )}
+            </div>
+          )
+        )}
+      </div>
 
       {!isManual && (
         <div className="space-y-3">
@@ -100,7 +107,6 @@ export function YearSection({
             <SemesterSection
               key={semester.id}
               semester={semester}
-              showOrdinal={showOrdinalSemesters}
               canRemove={year.semesters.length > 1}
               onRemove={() => onSemesterRemove(semester.id)}
               onCourseAdd={() => onCourseAdd(semester.id)}

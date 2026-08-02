@@ -16,8 +16,6 @@ import { HonorBadge } from '@/components/honor-badge'
 
 interface SemesterSectionProps {
   semester: Semester
-  /** Show "1st Semester" / "2nd Semester" / "Midyear" instead of the bare "Semester" label. */
-  showOrdinal: boolean
   canRemove: boolean
   onCourseChange: (courseId: string, patch: Partial<Course>) => void
   onCourseRemove: (courseId: string) => void
@@ -30,7 +28,6 @@ interface SemesterSectionProps {
 
 export function SemesterSection({
   semester,
-  showOrdinal,
   canRemove,
   onCourseChange,
   onCourseRemove,
@@ -40,8 +37,7 @@ export function SemesterSection({
   onManualGwaRemove,
   onRemove,
 }: SemesterSectionProps) {
-  const label = showOrdinal ? SEMESTER_LABELS[semester.kind] : 'Semester'
-  const isMidyear = semester.kind === 'midyear'
+  const label = SEMESTER_LABELS[semester.kind]
   const isManual = semester.manualGwa !== null
   const hasCourses = semester.courses.length > 0
   const gwa = getSemesterGwa(semester)
@@ -52,11 +48,6 @@ export function SemesterSection({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <h4 className="font-serif text-base font-semibold text-foreground">{label}</h4>
-          {isMidyear && (
-            <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[11px] font-medium text-accent">
-              Optional
-            </span>
-          )}
         </div>
         <div className="flex items-center gap-2">
           {!isManual && (

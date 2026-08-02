@@ -342,3 +342,36 @@ export function formatGwa(gwa: number | null): string {
   if (gwa === null) return '—'
   return gwa.toFixed(3)
 }
+
+function ordinalSuffix(n: number): string {
+  const v = n % 100
+  if (v >= 11 && v <= 13) return 'th'
+  switch (n % 10) {
+    case 1:
+      return 'st'
+    case 2:
+      return 'nd'
+    case 3:
+      return 'rd'
+    default:
+      return 'th'
+  }
+}
+
+/** "1", "2" -> "1st Year", "2nd Year". Falls back to "Year {label}" for non-numeric labels. */
+export function formatYearLabel(label: string): string {
+  const n = Number.parseFloat(label)
+  if (Number.isFinite(n) && Number.isInteger(n) && n > 0) {
+    return `${n}${ordinalSuffix(n)} Year`
+  }
+  return `Year ${label}`
+}
+
+/** Just the "st Year" / "2nd Year" tail, for pairing with an editable number input. */
+export function yearOrdinalSuffixWord(label: string): string {
+  const n = Number.parseFloat(label)
+  if (Number.isFinite(n) && Number.isInteger(n) && n > 0) {
+    return `${ordinalSuffix(n)} Year`
+  }
+  return ''
+}

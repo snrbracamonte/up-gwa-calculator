@@ -7,6 +7,7 @@ import {
   computeGwa,
   flattenCourses,
   SEMESTER_ORDER,
+  yearOrdinalSuffixWord,
   type Course,
   type ManualGwaEntry,
   type Semester,
@@ -303,30 +304,30 @@ export function GwaCalculator() {
           </p>
         )}
 
-        {years.length > 1 && (
-          <div role="tablist" aria-label="Academic years" className="flex flex-wrap items-center gap-1.5">
-            {years.map((year) => {
-              const active = year.id === activeYear.id
-              return (
-                <div
-                  key={year.id}
-                  onClick={() => setActiveYearId(year.id)}
-                  className={`inline-flex cursor-pointer items-center overflow-hidden rounded-lg border transition-colors ${
-                    active
-                      ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                      : 'border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground'
-                  }`}
-                >
-                  <span className="py-2 pl-3.5 pr-1 text-sm font-medium">Year</span>
-                  <input
-                    type="text"
-                    value={year.label}
-                    onFocus={() => setActiveYearId(year.id)}
-                    onChange={(e) => changeYearLabel(year.id, e.target.value)}
-                    onBlur={commitYearOrder}
-                    aria-label={`Year ${year.label} number`}
-                    className="w-8 bg-transparent py-2 text-sm font-medium outline-none"
-                  />
+        <div role="tablist" aria-label="Academic years" className="flex flex-wrap items-center gap-1.5">
+          {years.map((year) => {
+            const active = year.id === activeYear.id
+            return (
+              <div
+                key={year.id}
+                onClick={() => setActiveYearId(year.id)}
+                className={`inline-flex cursor-pointer items-center overflow-hidden rounded-lg border transition-colors ${
+                  active
+                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                    : 'border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground'
+                }`}
+              >
+                <input
+                  type="text"
+                  value={year.label}
+                  onFocus={() => setActiveYearId(year.id)}
+                  onChange={(e) => changeYearLabel(year.id, e.target.value)}
+                  onBlur={commitYearOrder}
+                  aria-label={`Year ${year.label} number`}
+                  className="w-7 bg-transparent py-2 pl-3.5 text-right text-sm font-medium outline-none"
+                />
+                <span className="py-2 pr-1 text-sm font-medium">{yearOrdinalSuffixWord(year.label)}</span>
+                {years.length > 1 && (
                   <button
                     type="button"
                     aria-label={`Remove Year ${year.label}`}
@@ -340,11 +341,11 @@ export function GwaCalculator() {
                   >
                     <X className="size-3.5" aria-hidden="true" />
                   </button>
-                </div>
-              )
-            })}
-          </div>
-        )}
+                )}
+              </div>
+            )
+          })}
+        </div>
 
         {activeYear && (
           <YearSection
