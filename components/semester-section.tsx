@@ -1,0 +1,140 @@
+'use client'
+
+import { Plus, Sparkles, X } from 'lucide-react'
+import {
+  classifySemesterHonor,
+  formatGwa,
+  getSemesterGwa,
+  SEMESTER_LABELS,
+  type Course,
+  type ManualGwaEntry,
+  type Semester,
+} from '@/lib/gwa'
+import { CourseRow } from '@/components/course-row'
+import { ManualGwaEntryField } from '@/components/manual-gwa-entry'
+import { HonorBadge } from '@/components/honor-badge'
+
+interface SemesterSectionProps {
+  semester: Semester
+  /** Show "1st Semester" / "2nd Semester" / "Midyear" instead of the bare "Semester" label. */
+  showOrdinal: boolean
+  canRemove: boolean
+  onCourseChange: (courseId: string, patch: Partial<Course>) => void
+  onCourseRemove: (courseId: string) => void
+  onCourseAdd: () => void
+  onManualGwaAdd: () => void
+  onManualGwaChange: (patch: Partial<ManualGwaEntry>) => void
+  onManualGwaRemove: () => void
+  onRemove: () => void
+}
+
+export function SemesterSection({
+  semester,
+  showOrdinal,
+  canRemove,
+  onCourseChange,
+  onCourseRemove,
+  onCourseAdd,
+  onManualGwaAdd,
+  onManualGwaChange,
+  onManualGwaRemove,
+  onRemove,
+}: SemesterSectionProps) {
+  const label = showOrdinal ? SEMESTER_LABELS[semester.kind] : 'Semester'
+  const isMidyear = semester.kind === 'midyear'
+  const isManual = semester.manualGwa !== null
+  const hasCourses = semester.courses.length > 0
+  const gwa = getSemesterGwa(semester)
+  const scholar = classifySemesterHonor(gwa)
+
+  return (
+    <div className="rounded-xl border border-border bg-secondary/40 p-3 sm:p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <h4 className="font-serif text-base font-semibold text-foreground">{label}</h4>
+          {isMidyear && (
+            <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[11px] font-medium text-accent">
+              Optional
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {!isManual && (
+            <span className="text-xs text-muted-foreground">
+              Sem GWA{' '}
+              <span className="font-semibold tabular-nums text-foreground">{formatGwa(gwa)}</span>
+            </span>
+          )}
+          {canRemove && (
+            <button
+              type="button"
+              onClick={onRemove}
+              aria-label={`Remove ${label}`}
+              className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-destructive"
+            >
+              <X className="size-4" aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {gwa !== null && scholar.tone !== 'none' && (
+        <div className="mt-2">
+          <HonorBadge title={scholar.title} range={scholar.range} note={scholar.note} tone={scholar.tone} compact />
+        </div>
+      )}
+
+      {isManual && semester.manualGwa ? (
+        <div className="mt-3">
+          <ManualGwaEntryField
+            idPrefix={semester.id}
+            label="Sem GWA"
+            value={semester.manualGwa}
+            onChange={onManualGwaChange}
+            onRemove={onManualGwaRemove}
+          />
+        </div>
+      ) : (
+        <>
+          {hasCourses && (
+            <div className="mt-3 space-y-2">
+              {semester.courses.map((course, index) => (
+                <CourseRow
+                  key={course.id}
+                  course={course}
+                  index={index}
+                  canRemove
+                  onChange={(_, patch) => onCourseChange(course.id, patch)}
+                  onRemove={() => onCourseRemove(course.id)}
+                />
+              ))}
+            </div>
+          )}
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={onCourseAdd}
+              className={`inline-flex items-center justify-center gap-1.5 rounded-md border border-dashed border-border bg-background px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary ${
+                hasCourses ? 'w-full' : 'flex-1'
+              }`}
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              Add course
+            </button>
+            {!hasCourses && (
+              <button
+                type="button"
+                onClick={onManualGwaAdd}
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-dashed border-border bg-background px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary"
+              >
+                <Sparkles className="size-4" aria-hidden="true" />
+                Add GWA
+              </button>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
