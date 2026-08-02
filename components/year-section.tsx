@@ -14,6 +14,7 @@ import {
 import { SemesterSection } from '@/components/semester-section'
 import { ManualGwaEntryField } from '@/components/manual-gwa-entry'
 import { HonorBadge } from '@/components/honor-badge'
+import { ACTION_BUTTON_CLASS } from '@/components/action-button-class'
 
 interface YearSectionProps {
   year: Year
@@ -52,6 +53,7 @@ export function YearSection({
   const honor = classifyHonors(gwa)
   const nextKind = SEMESTER_ORDER.find((kind) => !year.semesters.some((s) => s.kind === kind))
   const canAddSemester = !isManual && nextKind !== undefined
+  const hasSemesters = year.semesters.length > 0
   const semestersEmpty = year.semesters.every((s) => s.courses.length === 0 && s.manualGwa === null)
   const canAddYearGwa = !isManual && semestersEmpty
   const label = formatYearLabel(year.label)
@@ -86,22 +88,24 @@ export function YearSection({
             />
           </div>
         ) : (
-          canAddYearGwa && (
-            <div className="mt-3">
-              <button
-                type="button"
-                onClick={onYearManualGwaAdd}
-                className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-border bg-background px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary"
-              >
-                <Sparkles className="size-4" aria-hidden="true" />
-                Add GWA
+          !hasSemesters && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button type="button" onClick={onAddSemester} className={ACTION_BUTTON_CLASS}>
+                <CalendarPlus className="size-4" aria-hidden="true" />
+                Add semester
               </button>
+              {canAddYearGwa && (
+                <button type="button" onClick={onYearManualGwaAdd} className={ACTION_BUTTON_CLASS}>
+                  <Sparkles className="size-4" aria-hidden="true" />
+                  Add GWA
+                </button>
+              )}
             </div>
           )
         )}
       </div>
 
-      {!isManual && (
+      {!isManual && hasSemesters && (
         <div className="space-y-3">
           {year.semesters.map((semester) => (
             <SemesterSection
@@ -118,11 +122,7 @@ export function YearSection({
             />
           ))}
           {canAddSemester && (
-            <button
-              type="button"
-              onClick={onAddSemester}
-              className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-border bg-background px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary"
-            >
+            <button type="button" onClick={onAddSemester} className={ACTION_BUTTON_CLASS}>
               <CalendarPlus className="size-4" aria-hidden="true" />
               Add semester
             </button>

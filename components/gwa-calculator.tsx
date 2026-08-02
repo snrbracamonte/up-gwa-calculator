@@ -6,8 +6,8 @@ import {
   computeCumulativeGwa,
   computeGwa,
   flattenCourses,
+  formatYearLabel,
   SEMESTER_ORDER,
-  yearOrdinalSuffixWord,
   type Course,
   type ManualGwaEntry,
   type Semester,
@@ -39,19 +39,12 @@ function makeSemester(kind: SemesterKind): Semester {
 }
 
 function makeYear(label: string): Year {
-  return { id: uid('year'), label, semesters: [makeSemester('first')], manualGwa: null }
+  return { id: uid('year'), label, semesters: [], manualGwa: null }
 }
 
 // Fully deterministic initial state — identical on server and client.
 function initialYears(): Year[] {
-  return [
-    {
-      id: 'year-init',
-      label: '1',
-      manualGwa: null,
-      semesters: [{ id: 'sem-init', kind: 'first', courses: [], manualGwa: null }],
-    },
-  ]
+  return [{ id: 'year-init', label: '1', manualGwa: null, semesters: [] }]
 }
 
 // True when the board is still exactly the pristine starting state, so an
@@ -59,10 +52,7 @@ function initialYears(): Year[] {
 function isBlankState(years: Year[]): boolean {
   if (years.length !== 1) return false
   const [year] = years
-  if (year.manualGwa !== null) return false
-  if (year.semesters.length !== 1) return false
-  const [sem] = year.semesters
-  return sem.courses.length === 0 && sem.manualGwa === null
+  return year.manualGwa === null && year.semesters.length === 0
 }
 
 // The smallest positive integer not already used as a year label — e.g. if
@@ -157,18 +147,6 @@ export function GwaCalculator() {
 
   function updateYear(yearId: string, updater: (year: Year) => Year) {
     setYears((prev) => prev.map((y) => (y.id === yearId ? updater(y) : y)))
-  }
-
-  function changeYearLabel(yearId: string, label: string) {
-    // Don't re-sort here — reordering mid-keystroke would yank focus away
-    // while the person is still typing. Sorting happens on blur instead.
-    updateYear(yearId, (year) => ({ ...year, label }))
-  }
-
-  // Re-sorts year tabs by their numeric label once an edit is done (on
-  // blur), so a year edited to a higher number moves after its siblings.
-  function commitYearOrder() {
-    setYears((prev) => sortYearsByLabel(prev))
   }
 
   // --- Year-level manual GWA ---
@@ -274,14 +252,6 @@ export function GwaCalculator() {
             <ImportPdfButton onImport={handleImport} />
             <button
               type="button"
-              onClick={addYear}
-              className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-border bg-card px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary"
-            >
-              <CalendarPlus className="size-4" aria-hidden="true" />
-              Add year
-            </button>
-            <button
-              type="button"
               onClick={reset}
               className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
             >
@@ -310,31 +280,26 @@ export function GwaCalculator() {
             return (
               <div
                 key={year.id}
-                onClick={() => setActiveYearId(year.id)}
-                className={`inline-flex cursor-pointer items-center overflow-hidden rounded-lg border transition-colors ${
+                className={`inline-flex items-center overflow-hidden rounded-lg border transition-colors ${
                   active
                     ? 'border-primary bg-primary text-primary-foreground shadow-sm'
                     : 'border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground'
                 }`}
               >
-                <input
-                  type="text"
-                  value={year.label}
-                  onFocus={() => setActiveYearId(year.id)}
-                  onChange={(e) => changeYearLabel(year.id, e.target.value)}
-                  onBlur={commitYearOrder}
-                  aria-label={`Year ${year.label} number`}
-                  className="w-7 bg-transparent py-2 pl-3.5 text-right text-sm font-medium outline-none"
-                />
-                <span className="py-2 pr-1 text-sm font-medium">{yearOrdinalSuffixWord(year.label)}</span>
+                <button
+                  role="tab"
+                  type="button"
+                  aria-selected={active}
+                  onClick={() => setActiveYearId(year.id)}
+                  className={`py-2 text-sm font-medium ${years.length > 1 ? 'pl-3.5 pr-2' : 'px-3.5'}`}
+                >
+                  {formatYearLabel(year.label)}
+                </button>
                 {years.length > 1 && (
                   <button
                     type="button"
-                    aria-label={`Remove Year ${year.label}`}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      removeYear(year.id)
-                    }}
+                    aria-label={`Remove ${formatYearLabel(year.label)}`}
+                    onClick={() => removeYear(year.id)}
                     className={`mr-1.5 flex size-5 items-center justify-center rounded-md transition-colors ${
                       active ? 'hover:bg-primary-foreground/20' : 'hover:bg-destructive/10 hover:text-destructive'
                     }`}
@@ -345,6 +310,15 @@ export function GwaCalculator() {
               </div>
             )
           })}
+          <button
+            type="button"
+            onClick={addYear}
+            aria-label="Add year"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border bg-card px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary"
+          >
+            <CalendarPlus className="size-4" aria-hidden="true" />
+            Add year
+          </button>
         </div>
 
         {activeYear && (

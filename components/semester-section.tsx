@@ -13,6 +13,7 @@ import {
 import { CourseRow } from '@/components/course-row'
 import { ManualGwaEntryField } from '@/components/manual-gwa-entry'
 import { HonorBadge } from '@/components/honor-badge'
+import { ACTION_BUTTON_CLASS } from '@/components/action-button-class'
 
 interface SemesterSectionProps {
   semester: Semester
@@ -103,22 +104,12 @@ export function SemesterSection({
           )}
 
           <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={onCourseAdd}
-              className={`inline-flex items-center justify-center gap-1.5 rounded-md border border-dashed border-border bg-background px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary ${
-                hasCourses ? 'w-full' : 'flex-1'
-              }`}
-            >
+            <button type="button" onClick={onCourseAdd} className={ACTION_BUTTON_CLASS}>
               <Plus className="size-4" aria-hidden="true" />
               Add course
             </button>
             {!hasCourses && (
-              <button
-                type="button"
-                onClick={onManualGwaAdd}
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-dashed border-border bg-background px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary"
-              >
+              <button type="button" onClick={onManualGwaAdd} className={ACTION_BUTTON_CLASS}>
                 <Sparkles className="size-4" aria-hidden="true" />
                 Add GWA
               </button>
