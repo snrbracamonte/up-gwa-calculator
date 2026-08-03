@@ -118,9 +118,6 @@ export function SemesterSection({
                 Add Semestral GWA
               </button>
             )}
-          </div>
-
-          <div className="mt-2">
             <IskolarImportButton onImport={onImportIskolar} />
           </div>
         </>

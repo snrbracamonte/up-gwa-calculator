@@ -37,14 +37,14 @@ export function IskolarImportButton({ onImport }: IskolarImportButtonProps) {
     <>
       <button type="button" onClick={() => setOpen(true)} className={ACTION_BUTTON_CLASS}>
         <ClipboardPaste className="size-4" aria-hidden="true" />
-        Import from Iskolar
+        Import from ISKOLAR
       </button>
 
       {open && (
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Import from Iskolar"
+          aria-label="Import from ISKOLAR"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
           onClick={close}
         >
@@ -53,7 +53,7 @@ export function IskolarImportButton({ onImport }: IskolarImportButtonProps) {
             className="w-full max-w-lg rounded-xl border border-border bg-card p-5 shadow-lg"
           >
             <div className="flex items-start justify-between gap-3">
-              <h3 className="font-serif text-lg font-semibold text-foreground">Import from Iskolar</h3>
+              <h3 className="font-serif text-lg font-semibold text-foreground">Import from ISKOLAR</h3>
               <button
                 type="button"
                 onClick={close}
@@ -73,9 +73,8 @@ export function IskolarImportButton({ onImport }: IskolarImportButtonProps) {
                 className="text-primary underline underline-offset-2"
               >
                 iskolar.upm.edu.ph/student/classes/grades
-              </a>
-              , select your grades table for this semester, copy it, then paste it below. Only the
-              subject code, units, and grade are used.
+              </a>{' '}
+              and copy your grades table for this semester.
             </p>
 
             <label className="sr-only" htmlFor="iskolar-paste">

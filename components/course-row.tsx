@@ -1,6 +1,6 @@
 'use client'
 
-import { Trash2 } from 'lucide-react'
+import { ChevronDown, Trash2 } from 'lucide-react'
 import { COURSE_TYPE_OPTIONS, GRADE_OPTIONS, type Course, type CourseType, type GradeValue } from '@/lib/gwa'
 
 interface CourseRowProps {
@@ -34,11 +34,8 @@ export function CourseRow({ course, index, canRemove, onChange, onRemove }: Cour
         </label>
         <input
           id={`units-${course.id}`}
-          type="number"
+          type="text"
           inputMode="decimal"
-          min="0"
-          max="99"
-          step="0.5"
           maxLength={2}
           value={course.units}
           onChange={(e) => onChange(course.id, { units: e.target.value })}
@@ -51,22 +48,28 @@ export function CourseRow({ course, index, canRemove, onChange, onRemove }: Cour
         <label className="sr-only" htmlFor={`type-${course.id}`}>
           {`Course ${index + 1} type`}
         </label>
-        <select
-          id={`type-${course.id}`}
-          value={course.type}
-          onChange={(e) => onChange(course.id, { type: e.target.value as CourseType })}
-          title="Course type (PE and NSTP are excluded from GWA)"
-          className="w-full rounded-md border border-input bg-background px-2 py-2 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
-        >
-          <option value="" disabled>
-            Course Type
-          </option>
-          {COURSE_TYPE_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.short}
+        <div className="relative">
+          <select
+            id={`type-${course.id}`}
+            value={course.type}
+            onChange={(e) => onChange(course.id, { type: e.target.value as CourseType })}
+            title="Course type (PE and NSTP are excluded from GWA)"
+            className="w-full appearance-none rounded-md border border-input bg-background py-2 pl-2 pr-7 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+          >
+            <option value="" disabled>
+              Course Type
             </option>
-          ))}
-        </select>
+            {COURSE_TYPE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.short}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+        </div>
       </div>
 
       <div className="col-span-6 sm:col-span-4">
@@ -74,21 +77,27 @@ export function CourseRow({ course, index, canRemove, onChange, onRemove }: Cour
           <label className="sr-only" htmlFor={`grade-${course.id}`}>
             {`Course ${index + 1} grade`}
           </label>
-          <select
-            id={`grade-${course.id}`}
-            value={course.grade}
-            onChange={(e) => onChange(course.id, { grade: e.target.value as GradeValue | '' })}
-            className="w-full min-w-0 rounded-md border border-input bg-background px-2 py-2 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
-          >
-            <option value="" disabled>
-              Grade
-            </option>
-            {GRADE_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {`${option.label} (${option.description})`}
+          <div className="relative min-w-0 flex-1">
+            <select
+              id={`grade-${course.id}`}
+              value={course.grade}
+              onChange={(e) => onChange(course.id, { grade: e.target.value as GradeValue | '' })}
+              className="w-full appearance-none rounded-md border border-input bg-background py-2 pl-2 pr-7 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+            >
+              <option value="" disabled>
+                Grade
               </option>
-            ))}
-          </select>
+              {GRADE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {`${option.label} (${option.description})`}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
+          </div>
 
           <button
             type="button"
