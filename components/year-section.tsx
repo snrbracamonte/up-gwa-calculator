@@ -1,6 +1,6 @@
 'use client'
 
-import { CalendarPlus, Sparkles } from 'lucide-react'
+import { CalendarPlus, Plus } from 'lucide-react'
 import {
   classifyHonors,
   formatGwa,
@@ -15,6 +15,7 @@ import { SemesterSection } from '@/components/semester-section'
 import { ManualGwaEntryField } from '@/components/manual-gwa-entry'
 import { HonorBadge } from '@/components/honor-badge'
 import { ACTION_BUTTON_CLASS } from '@/components/action-button-class'
+import type { IskolarCourse } from '@/lib/iskolar-import'
 
 interface YearSectionProps {
   year: Year
@@ -26,6 +27,7 @@ interface YearSectionProps {
   onSemesterManualGwaAdd: (semesterId: string) => void
   onSemesterManualGwaChange: (semesterId: string, patch: Partial<ManualGwaEntry>) => void
   onSemesterManualGwaRemove: (semesterId: string) => void
+  onSemesterImportIskolar: (semesterId: string, courses: IskolarCourse[]) => void
   onYearManualGwaAdd: () => void
   onYearManualGwaChange: (patch: Partial<ManualGwaEntry>) => void
   onYearManualGwaRemove: () => void
@@ -44,6 +46,7 @@ export function YearSection({
   onSemesterManualGwaAdd,
   onSemesterManualGwaChange,
   onSemesterManualGwaRemove,
+  onSemesterImportIskolar,
   onYearManualGwaAdd,
   onYearManualGwaChange,
   onYearManualGwaRemove,
@@ -96,8 +99,8 @@ export function YearSection({
               </button>
               {canAddYearGwa && (
                 <button type="button" onClick={onYearManualGwaAdd} className={ACTION_BUTTON_CLASS}>
-                  <Sparkles className="size-4" aria-hidden="true" />
-                  Add GWA
+                  <Plus className="size-4" aria-hidden="true" />
+                  Add Year GWA
                 </button>
               )}
             </div>
@@ -111,7 +114,7 @@ export function YearSection({
             <SemesterSection
               key={semester.id}
               semester={semester}
-              canRemove={year.semesters.length > 1}
+              canRemove
               onRemove={() => onSemesterRemove(semester.id)}
               onCourseAdd={() => onCourseAdd(semester.id)}
               onCourseChange={(courseId, patch) => onCourseChange(semester.id, courseId, patch)}
@@ -119,6 +122,7 @@ export function YearSection({
               onManualGwaAdd={() => onSemesterManualGwaAdd(semester.id)}
               onManualGwaChange={(patch) => onSemesterManualGwaChange(semester.id, patch)}
               onManualGwaRemove={() => onSemesterManualGwaRemove(semester.id)}
+              onImportIskolar={(courses) => onSemesterImportIskolar(semester.id, courses)}
             />
           ))}
           {canAddSemester && (

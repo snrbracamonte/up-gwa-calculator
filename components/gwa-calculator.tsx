@@ -18,6 +18,7 @@ import { YearSection } from '@/components/year-section'
 import { ResultCard } from '@/components/result-card'
 import { ImportPdfButton } from '@/components/import-pdf-button'
 import { toYears, type ImportResult } from '@/lib/pdf-import'
+import type { IskolarCourse } from '@/lib/iskolar-import'
 
 // IDs for items added at runtime. These factories only ever run from client
 // event handlers, so a simple counter is fine. A module-level counter must
@@ -181,11 +182,10 @@ export function GwaCalculator() {
   }
 
   function removeSemester(yearId: string, semesterId: string) {
-    updateYear(yearId, (year) =>
-      year.semesters.length > 1
-        ? { ...year, semesters: year.semesters.filter((s) => s.id !== semesterId) }
-        : year,
-    )
+    updateYear(yearId, (year) => ({
+      ...year,
+      semesters: year.semesters.filter((s) => s.id !== semesterId),
+    }))
   }
 
   function updateSemester(yearId: string, semesterId: string, updater: (sem: Semester) => Semester) {
@@ -238,6 +238,20 @@ export function GwaCalculator() {
       ...sem,
       courses: sem.courses.filter((c) => c.id !== courseId),
     }))
+  }
+
+  function importIskolarCourses(yearId: string, semesterId: string, courses: IskolarCourse[]) {
+    updateSemester(yearId, semesterId, (sem) => {
+      if (sem.manualGwa !== null) return sem
+      const newCourses: Course[] = courses.map((c) => ({
+        id: uid('course'),
+        name: c.name,
+        units: String(c.units),
+        grade: c.grade,
+        type: c.type,
+      }))
+      return { ...sem, courses: [...sem.courses, ...newCourses] }
+    })
   }
 
   return (
@@ -337,6 +351,9 @@ export function GwaCalculator() {
               changeSemesterManualGwa(activeYear.id, semesterId, patch)
             }
             onSemesterManualGwaRemove={(semesterId) => removeSemesterManualGwa(activeYear.id, semesterId)}
+            onSemesterImportIskolar={(semesterId, courses) =>
+              importIskolarCourses(activeYear.id, semesterId, courses)
+            }
             onYearManualGwaAdd={() => addYearManualGwa(activeYear.id)}
             onYearManualGwaChange={(patch) => changeYearManualGwa(activeYear.id, patch)}
             onYearManualGwaRemove={() => removeYearManualGwa(activeYear.id)}

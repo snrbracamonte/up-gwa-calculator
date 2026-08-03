@@ -1,6 +1,6 @@
 'use client'
 
-import { Plus, Sparkles, X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import {
   classifySemesterHonor,
   formatGwa,
@@ -14,6 +14,8 @@ import { CourseRow } from '@/components/course-row'
 import { ManualGwaEntryField } from '@/components/manual-gwa-entry'
 import { HonorBadge } from '@/components/honor-badge'
 import { ACTION_BUTTON_CLASS } from '@/components/action-button-class'
+import { IskolarImportButton } from '@/components/iskolar-import-button'
+import type { IskolarCourse } from '@/lib/iskolar-import'
 
 interface SemesterSectionProps {
   semester: Semester
@@ -24,6 +26,7 @@ interface SemesterSectionProps {
   onManualGwaAdd: () => void
   onManualGwaChange: (patch: Partial<ManualGwaEntry>) => void
   onManualGwaRemove: () => void
+  onImportIskolar: (courses: IskolarCourse[]) => void
   onRemove: () => void
 }
 
@@ -36,6 +39,7 @@ export function SemesterSection({
   onManualGwaAdd,
   onManualGwaChange,
   onManualGwaRemove,
+  onImportIskolar,
   onRemove,
 }: SemesterSectionProps) {
   const label = SEMESTER_LABELS[semester.kind]
@@ -110,10 +114,14 @@ export function SemesterSection({
             </button>
             {!hasCourses && (
               <button type="button" onClick={onManualGwaAdd} className={ACTION_BUTTON_CLASS}>
-                <Sparkles className="size-4" aria-hidden="true" />
-                Add GWA
+                <Plus className="size-4" aria-hidden="true" />
+                Add Semestral GWA
               </button>
             )}
+          </div>
+
+          <div className="mt-2">
+            <IskolarImportButton onImport={onImportIskolar} />
           </div>
         </>
       )}
