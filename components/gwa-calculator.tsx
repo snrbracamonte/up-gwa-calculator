@@ -1,7 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { CalendarPlus, RotateCcw, X } from 'lucide-react'
+import { useMemo, useRef, useState, type ChangeEvent } from 'react'
+import { CalendarPlus, Download, RotateCcw, Upload, X } from 'lucide-react'
 import {
   computeCumulativeGwa,
   computeGwa,
@@ -19,6 +19,7 @@ import { ResultCard } from '@/components/result-card'
 import { ImportPdfButton } from '@/components/import-pdf-button'
 import { toYears, type ImportResult } from '@/lib/pdf-import'
 import type { IskolarCourse } from '@/lib/iskolar-import'
+import { parseYearsFile, serializeYears } from '@/lib/data-io'
 
 // IDs for items added at runtime. These factories only ever run from client
 // event handlers, so a simple counter is fine. A module-level counter must
@@ -88,6 +89,7 @@ export function GwaCalculator() {
   const [importMessage, setImportMessage] = useState<{ tone: 'success' | 'warning'; text: string } | null>(
     null,
   )
+  const importFileRef = useRef<HTMLInputElement>(null)
 
   const cumulative = useMemo(() => computeCumulativeGwa(years), [years])
   const courseStats = useMemo(() => computeGwa(flattenCourses(years)), [years])
@@ -126,6 +128,49 @@ export function GwaCalculator() {
     setYears(fresh)
     setActiveYearId(fresh[0].id)
     setImportMessage(null)
+  }
+
+  // --- Full-board export/import (JSON) ---
+  function handleExport() {
+    const json = serializeYears(years)
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `gwa-calculator-${new Date().toISOString().slice(0, 10)}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  function handleImportDataClick() {
+    importFileRef.current?.click()
+  }
+
+  async function handleImportDataFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    const text = await file.text()
+    const parsed = parseYearsFile(text)
+    if (!parsed) {
+      setImportMessage({
+        tone: 'warning',
+        text: "That file doesn't look like a GWA Calculator export — make sure you're importing a .json file downloaded from Export.",
+      })
+      return
+    }
+
+    if (!isBlankState(years) && !window.confirm('Importing will replace everything currently on the board. Continue?')) {
+      return
+    }
+
+    setYears(parsed.years)
+    setActiveYearId(parsed.years[0].id)
+    const yearWord = parsed.years.length === 1 ? 'year' : 'years'
+    setImportMessage({ tone: 'success', text: `Imported ${parsed.years.length} ${yearWord} from file.` })
   }
 
   function handleImport(result: ImportResult) {
@@ -255,115 +300,182 @@ export function GwaCalculator() {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-      <div className="space-y-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            Add courses per semester, or enter a known GWA directly. Add semesters or years to
-            build a cumulative GWA.
-          </p>
-          <div className="flex flex-wrap items-center gap-2">
-            <ImportPdfButton onImport={handleImport} />
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-primary text-primary-foreground">
+        <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-8">
+          <div className="flex items-center gap-3">
+            <span
+              className="flex size-11 shrink-0 items-center justify-center rounded-full border-2 border-primary-foreground/70 font-serif text-lg font-bold tracking-tight"
+              aria-hidden="true"
+            >
+              UP
+            </span>
+            <div>
+              <p className="font-serif text-base font-semibold leading-tight sm:text-lg">
+                University of the Philippines
+              </p>
+              <p className="text-xs text-primary-foreground/80">GWA Calculator</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-end gap-1.5">
             <button
               type="button"
-              onClick={reset}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+              onClick={handleExport}
+              className="inline-flex items-center gap-1.5 rounded-md border border-primary-foreground/30 bg-primary-foreground/10 px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/20"
             >
-              <RotateCcw className="size-4" aria-hidden="true" />
-              Reset
+              <Download className="size-3.5" aria-hidden="true" />
+              Export
             </button>
+            <button
+              type="button"
+              onClick={handleImportDataClick}
+              className="inline-flex items-center gap-1.5 rounded-md border border-primary-foreground/30 bg-primary-foreground/10 px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/20"
+            >
+              <Upload className="size-3.5" aria-hidden="true" />
+              Import
+            </button>
+            <input
+              ref={importFileRef}
+              type="file"
+              accept="application/json"
+              className="sr-only"
+              onChange={handleImportDataFile}
+            />
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-[100rem] px-4 py-8 sm:px-8 sm:py-12">
+        <section className="mb-8 max-w-2xl">
+          <h1 className="text-balance font-serif text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            Compute your General Weighted Average
+          </h1>
+          <p className="mt-3 text-pretty leading-relaxed text-muted-foreground">
+            Add your courses, enter the units and your final grade on the official UP scale, and
+            instantly see your GWA along with your Latin honors standing. Everything is calculated
+            right in your browser.
+          </p>
+        </section>
+
+        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+          <div className="space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-muted-foreground">
+                Add courses per semester, or enter a known GWA directly. Add semesters or years to
+                build a cumulative GWA.
+              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <ImportPdfButton onImport={handleImport} />
+                <button
+                  type="button"
+                  onClick={reset}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                >
+                  <RotateCcw className="size-4" aria-hidden="true" />
+                  Reset
+                </button>
+              </div>
+            </div>
+
+            {importMessage && (
+              <p
+                role="status"
+                className={`rounded-lg border p-3 text-sm ${
+                  importMessage.tone === 'success'
+                    ? 'border-accent/40 bg-accent/10 text-foreground'
+                    : 'border-destructive/30 bg-destructive/10 text-destructive'
+                }`}
+              >
+                {importMessage.text}
+              </p>
+            )}
+
+            <div role="tablist" aria-label="Academic years" className="flex flex-wrap items-center gap-1.5">
+              {years.map((year) => {
+                const active = year.id === activeYear.id
+                return (
+                  <div
+                    key={year.id}
+                    className={`inline-flex items-center overflow-hidden rounded-lg border transition-colors ${
+                      active
+                        ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                        : 'border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground'
+                    }`}
+                  >
+                    <button
+                      role="tab"
+                      type="button"
+                      aria-selected={active}
+                      onClick={() => setActiveYearId(year.id)}
+                      className={`py-2 text-sm font-medium ${years.length > 1 ? 'pl-3.5 pr-2' : 'px-3.5'}`}
+                    >
+                      {formatYearLabel(year.label)}
+                    </button>
+                    {years.length > 1 && (
+                      <button
+                        type="button"
+                        aria-label={`Remove ${formatYearLabel(year.label)}`}
+                        onClick={() => removeYear(year.id)}
+                        className={`mr-1.5 flex size-5 items-center justify-center rounded-md transition-colors ${
+                          active ? 'hover:bg-primary-foreground/20' : 'hover:bg-destructive/10 hover:text-destructive'
+                        }`}
+                      >
+                        <X className="size-3.5" aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
+              <button
+                type="button"
+                onClick={addYear}
+                aria-label="Add year"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border bg-card px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary"
+              >
+                <CalendarPlus className="size-4" aria-hidden="true" />
+                Add year
+              </button>
+            </div>
+
+            {activeYear && (
+              <YearSection
+                key={activeYear.id}
+                year={activeYear}
+                onAddSemester={() => addSemester(activeYear.id)}
+                onSemesterRemove={(semesterId) => removeSemester(activeYear.id, semesterId)}
+                onCourseAdd={(semesterId) => addCourse(activeYear.id, semesterId)}
+                onCourseChange={(semesterId, courseId, patch) =>
+                  changeCourse(activeYear.id, semesterId, courseId, patch)
+                }
+                onCourseRemove={(semesterId, courseId) => removeCourse(activeYear.id, semesterId, courseId)}
+                onSemesterManualGwaAdd={(semesterId) => addSemesterManualGwa(activeYear.id, semesterId)}
+                onSemesterManualGwaChange={(semesterId, patch) =>
+                  changeSemesterManualGwa(activeYear.id, semesterId, patch)
+                }
+                onSemesterManualGwaRemove={(semesterId) => removeSemesterManualGwa(activeYear.id, semesterId)}
+                onSemesterImportIskolar={(semesterId, courses) =>
+                  importIskolarCourses(activeYear.id, semesterId, courses)
+                }
+                onYearManualGwaAdd={() => addYearManualGwa(activeYear.id)}
+                onYearManualGwaChange={(patch) => changeYearManualGwa(activeYear.id, patch)}
+                onYearManualGwaRemove={() => removeYearManualGwa(activeYear.id)}
+              />
+            )}
+          </div>
+
+          <div className="lg:sticky lg:top-6 lg:self-start">
+            <ResultCard cumulative={cumulative} courseStats={courseStats} manualEntryCount={manualEntryCount} />
           </div>
         </div>
 
-        {importMessage && (
-          <p
-            role="status"
-            className={`rounded-lg border p-3 text-sm ${
-              importMessage.tone === 'success'
-                ? 'border-accent/40 bg-accent/10 text-foreground'
-                : 'border-destructive/30 bg-destructive/10 text-destructive'
-            }`}
-          >
-            {importMessage.text}
+        <footer className="mt-12 border-t border-border pt-6 text-sm text-muted-foreground">
+          <p className="text-pretty">
+            This is an unofficial tool for estimating your GWA. Always confirm your official records
+            and honors eligibility with your college or the Office of the University Registrar.
           </p>
-        )}
-
-        <div role="tablist" aria-label="Academic years" className="flex flex-wrap items-center gap-1.5">
-          {years.map((year) => {
-            const active = year.id === activeYear.id
-            return (
-              <div
-                key={year.id}
-                className={`inline-flex items-center overflow-hidden rounded-lg border transition-colors ${
-                  active
-                    ? 'border-primary bg-primary text-primary-foreground shadow-sm'
-                    : 'border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground'
-                }`}
-              >
-                <button
-                  role="tab"
-                  type="button"
-                  aria-selected={active}
-                  onClick={() => setActiveYearId(year.id)}
-                  className={`py-2 text-sm font-medium ${years.length > 1 ? 'pl-3.5 pr-2' : 'px-3.5'}`}
-                >
-                  {formatYearLabel(year.label)}
-                </button>
-                {years.length > 1 && (
-                  <button
-                    type="button"
-                    aria-label={`Remove ${formatYearLabel(year.label)}`}
-                    onClick={() => removeYear(year.id)}
-                    className={`mr-1.5 flex size-5 items-center justify-center rounded-md transition-colors ${
-                      active ? 'hover:bg-primary-foreground/20' : 'hover:bg-destructive/10 hover:text-destructive'
-                    }`}
-                  >
-                    <X className="size-3.5" aria-hidden="true" />
-                  </button>
-                )}
-              </div>
-            )
-          })}
-          <button
-            type="button"
-            onClick={addYear}
-            aria-label="Add year"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border bg-card px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary"
-          >
-            <CalendarPlus className="size-4" aria-hidden="true" />
-            Add year
-          </button>
-        </div>
-
-        {activeYear && (
-          <YearSection
-            key={activeYear.id}
-            year={activeYear}
-            onAddSemester={() => addSemester(activeYear.id)}
-            onSemesterRemove={(semesterId) => removeSemester(activeYear.id, semesterId)}
-            onCourseAdd={(semesterId) => addCourse(activeYear.id, semesterId)}
-            onCourseChange={(semesterId, courseId, patch) =>
-              changeCourse(activeYear.id, semesterId, courseId, patch)
-            }
-            onCourseRemove={(semesterId, courseId) => removeCourse(activeYear.id, semesterId, courseId)}
-            onSemesterManualGwaAdd={(semesterId) => addSemesterManualGwa(activeYear.id, semesterId)}
-            onSemesterManualGwaChange={(semesterId, patch) =>
-              changeSemesterManualGwa(activeYear.id, semesterId, patch)
-            }
-            onSemesterManualGwaRemove={(semesterId) => removeSemesterManualGwa(activeYear.id, semesterId)}
-            onSemesterImportIskolar={(semesterId, courses) =>
-              importIskolarCourses(activeYear.id, semesterId, courses)
-            }
-            onYearManualGwaAdd={() => addYearManualGwa(activeYear.id)}
-            onYearManualGwaChange={(patch) => changeYearManualGwa(activeYear.id, patch)}
-            onYearManualGwaRemove={() => removeYearManualGwa(activeYear.id)}
-          />
-        )}
-      </div>
-
-      <div className="lg:sticky lg:top-6 lg:self-start">
-        <ResultCard cumulative={cumulative} courseStats={courseStats} manualEntryCount={manualEntryCount} />
-      </div>
+        </footer>
+      </main>
     </div>
   )
 }
