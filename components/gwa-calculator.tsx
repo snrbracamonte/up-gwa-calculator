@@ -16,6 +16,7 @@ import {
 } from '@/lib/gwa'
 import { YearSection } from '@/components/year-section'
 import { ResultCard } from '@/components/result-card'
+import { GwaInfoSection } from '@/components/gwa-info-section'
 import { ImportPdfButton } from '@/components/import-pdf-button'
 import { toYears, type ImportResult } from '@/lib/pdf-import'
 import type { IskolarCourse } from '@/lib/iskolar-import'
@@ -334,19 +335,19 @@ export function GwaCalculator() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={handleExport}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-            >
-              <Download className="size-4" aria-hidden="true" />
-              Export JSON
-            </button>
-            <button
-              type="button"
               onClick={handleImportDataClick}
               className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
             >
               <Upload className="size-4" aria-hidden="true" />
               Import JSON
+            </button>
+            <button
+              type="button"
+              onClick={handleExport}
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+            >
+              <Download className="size-4" aria-hidden="true" />
+              Export JSON
             </button>
             <input
               ref={importFileRef}
@@ -464,8 +465,11 @@ export function GwaCalculator() {
             )}
           </div>
 
-          <div className="lg:sticky lg:top-6 lg:self-start">
-            <ResultCard cumulative={cumulative} courseStats={courseStats} manualEntryCount={manualEntryCount} />
+          <div className="space-y-4 lg:self-start">
+            <div className="lg:sticky lg:top-6">
+              <ResultCard cumulative={cumulative} courseStats={courseStats} manualEntryCount={manualEntryCount} />
+            </div>
+            <GwaInfoSection />
           </div>
         </div>
 

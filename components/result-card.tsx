@@ -67,12 +67,6 @@ export function ResultCard({ cumulative, courseStats, manualEntryCount }: Result
             {`Includes ${manualEntryCount} manually entered GWA${manualEntryCount === 1 ? '' : 's'}.`}
           </p>
         )}
-
-        <p className="text-pretty text-xs leading-relaxed text-muted-foreground">
-          GWA is the sum of (grade × units) divided by total units. Grades of INC and DRP are
-          excluded from the computation. Latin honors also require meeting residency and unit
-          requirements set by your college.
-        </p>
       </div>
     </div>
   )

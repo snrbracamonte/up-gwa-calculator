@@ -27,7 +27,7 @@ export function CourseRow({ course, index, canRemove, onChange, onRemove }: Cour
 
   return (
     <div className="grid grid-cols-12 items-center gap-2 rounded-lg border border-border bg-card p-2 sm:gap-3 sm:p-3">
-      <div className="col-span-12 sm:col-span-3">
+      <div className="col-span-12 sm:col-span-6">
         <label className="sr-only" htmlFor={`name-${course.id}`}>
           {`Course ${index + 1} name`}
         </label>
@@ -41,7 +41,7 @@ export function CourseRow({ course, index, canRemove, onChange, onRemove }: Cour
         />
       </div>
 
-      <div className="col-span-3 sm:col-span-2">
+      <div className="col-span-2 sm:col-span-1">
         <label className="sr-only" htmlFor={`units-${course.id}`}>
           {`Course ${index + 1} units`}
         </label>
@@ -78,7 +78,7 @@ export function CourseRow({ course, index, canRemove, onChange, onRemove }: Cour
         </div>
       </div>
 
-      <div className="col-span-4 sm:col-span-3">
+      <div className="col-span-4 sm:col-span-2">
         <label className="sr-only" htmlFor={`type-${course.id}`}>
           {`Course ${index + 1} type`}
         </label>
@@ -106,8 +106,8 @@ export function CourseRow({ course, index, canRemove, onChange, onRemove }: Cour
         </div>
       </div>
 
-      <div className="col-span-5 sm:col-span-4">
-        <div className="flex items-center gap-1">
+      <div className="col-span-6 sm:col-span-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <label className="sr-only" htmlFor={`grade-${course.id}`}>
             {`Course ${index + 1} grade`}
           </label>

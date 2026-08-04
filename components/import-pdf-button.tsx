@@ -40,7 +40,7 @@ export function ImportPdfButton({ onImport }: ImportPdfButtonProps) {
         ) : (
           <FileUp className="size-4" aria-hidden="true" />
         )}
-        {status === 'loading' ? 'Reading PDF…' : 'Import from PDF'}
+        {status === 'loading' ? 'Reading PDF…' : 'Import Curriculum'}
       </button>
       <input
         ref={inputRef}
