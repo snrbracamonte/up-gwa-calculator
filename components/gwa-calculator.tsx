@@ -158,7 +158,7 @@ export function GwaCalculator() {
     if (!parsed) {
       setImportMessage({
         tone: 'warning',
-        text: "That file doesn't look like a GWA Calculator export — make sure you're importing a .json file downloaded from Export.",
+        text: "That file doesn't look like a GWA Calculator export — make sure you're importing a .json file downloaded from Export JSON.",
       })
       return
     }
@@ -179,8 +179,8 @@ export function GwaCalculator() {
       return
     }
 
-    const imported = toYears(result.years, uid, isBlankState(years) ? 0 : years.length)
-    setYears((prev) => (isBlankState(prev) ? imported : [...prev, ...imported]))
+    const imported = toYears(result.years, uid)
+    setYears(imported)
     setActiveYearId(imported[0].id)
 
     const courseWord = result.courseCount === 1 ? 'course' : 'courses'
@@ -295,45 +295,58 @@ export function GwaCalculator() {
         grade: c.grade,
         type: c.type,
       }))
-      return { ...sem, courses: [...sem.courses, ...newCourses] }
+      return { ...sem, courses: newCourses }
     })
   }
 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-primary text-primary-foreground">
-        <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-8">
-          <div className="flex items-center gap-3">
-            <span
-              className="flex size-11 shrink-0 items-center justify-center rounded-full border-2 border-primary-foreground/70 font-serif text-lg font-bold tracking-tight"
-              aria-hidden="true"
-            >
-              UP
-            </span>
-            <div>
-              <p className="font-serif text-base font-semibold leading-tight sm:text-lg">
-                University of the Philippines
-              </p>
-              <p className="text-xs text-primary-foreground/80">GWA Calculator</p>
-            </div>
+        <div className="mx-auto flex max-w-[100rem] items-center gap-3 px-4 py-4 sm:px-8">
+          <span
+            className="flex size-11 shrink-0 items-center justify-center rounded-full border-2 border-primary-foreground/70 font-serif text-lg font-bold tracking-tight"
+            aria-hidden="true"
+          >
+            UP
+          </span>
+          <div>
+            <p className="font-serif text-base font-semibold leading-tight sm:text-lg">
+              University of the Philippines
+            </p>
+            <p className="text-xs text-primary-foreground/80">GWA Calculator</p>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-[100rem] px-4 py-8 sm:px-8 sm:py-12">
+        <section className="mb-8 flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-2xl">
+            <h1 className="text-balance font-serif text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+              Compute your General Weighted Average
+            </h1>
+            <p className="mt-3 text-pretty leading-relaxed text-muted-foreground">
+              Add your courses, enter the units and your final grade on the official UP scale, and
+              instantly see your GWA along with your Latin honors standing. Everything is calculated
+              right in your browser.
+            </p>
           </div>
 
-          <div className="flex flex-col items-end gap-1.5">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleExport}
-              className="inline-flex items-center gap-1.5 rounded-md border border-primary-foreground/30 bg-primary-foreground/10 px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/20"
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
             >
-              <Download className="size-3.5" aria-hidden="true" />
-              Export
+              <Download className="size-4" aria-hidden="true" />
+              Export JSON
             </button>
             <button
               type="button"
               onClick={handleImportDataClick}
-              className="inline-flex items-center gap-1.5 rounded-md border border-primary-foreground/30 bg-primary-foreground/10 px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/20"
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
             >
-              <Upload className="size-3.5" aria-hidden="true" />
-              Import
+              <Upload className="size-4" aria-hidden="true" />
+              Import JSON
             </button>
             <input
               ref={importFileRef}
@@ -343,19 +356,6 @@ export function GwaCalculator() {
               onChange={handleImportDataFile}
             />
           </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-[100rem] px-4 py-8 sm:px-8 sm:py-12">
-        <section className="mb-8 max-w-2xl">
-          <h1 className="text-balance font-serif text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-            Compute your General Weighted Average
-          </h1>
-          <p className="mt-3 text-pretty leading-relaxed text-muted-foreground">
-            Add your courses, enter the units and your final grade on the official UP scale, and
-            instantly see your GWA along with your Latin honors standing. Everything is calculated
-            right in your browser.
-          </p>
         </section>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">

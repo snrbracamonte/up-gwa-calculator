@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronDown, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
 import { COURSE_TYPE_OPTIONS, GRADE_OPTIONS, type Course, type CourseType, type GradeValue } from '@/lib/gwa'
 
 interface CourseRowProps {
@@ -11,10 +11,23 @@ interface CourseRowProps {
   onRemove: (id: string) => void
 }
 
+const MAX_UNITS = 99
+
 export function CourseRow({ course, index, canRemove, onChange, onRemove }: CourseRowProps) {
+  function setUnits(digits: string) {
+    onChange(course.id, { units: digits })
+  }
+
+  function stepUnits(delta: number) {
+    const current = Number.parseInt(course.units, 10)
+    const base = Number.isFinite(current) ? current : 0
+    const next = Math.min(MAX_UNITS, Math.max(0, base + delta))
+    setUnits(String(next))
+  }
+
   return (
     <div className="grid grid-cols-12 items-center gap-2 rounded-lg border border-border bg-card p-2 sm:gap-3 sm:p-3">
-      <div className="col-span-12 sm:col-span-4">
+      <div className="col-span-12 sm:col-span-3">
         <label className="sr-only" htmlFor={`name-${course.id}`}>
           {`Course ${index + 1} name`}
         </label>
@@ -28,20 +41,41 @@ export function CourseRow({ course, index, canRemove, onChange, onRemove }: Cour
         />
       </div>
 
-      <div className="col-span-2 sm:col-span-1">
+      <div className="col-span-3 sm:col-span-2">
         <label className="sr-only" htmlFor={`units-${course.id}`}>
           {`Course ${index + 1} units`}
         </label>
-        <input
-          id={`units-${course.id}`}
-          type="text"
-          inputMode="decimal"
-          maxLength={2}
-          value={course.units}
-          onChange={(e) => onChange(course.id, { units: e.target.value })}
-          placeholder="Units"
-          className="w-full rounded-md border border-input bg-background px-1 py-2 text-center text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
-        />
+        <div className="relative">
+          <input
+            id={`units-${course.id}`}
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={2}
+            value={course.units}
+            onChange={(e) => setUnits(e.target.value.replace(/\D/g, '').slice(0, 2))}
+            placeholder="Units"
+            className="w-full rounded-md border border-input bg-background py-2 pl-2 pr-6 text-center text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40"
+          />
+          <div className="absolute inset-y-0.5 right-0.5 flex w-5 flex-col overflow-hidden rounded-r-[5px]">
+            <button
+              type="button"
+              onClick={() => stepUnits(1)}
+              aria-label="Increase units"
+              className="flex flex-1 items-center justify-center text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <ChevronUp className="size-3" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => stepUnits(-1)}
+              aria-label="Decrease units"
+              className="flex flex-1 items-center justify-center border-t border-input text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <ChevronDown className="size-3" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="col-span-4 sm:col-span-3">
@@ -72,7 +106,7 @@ export function CourseRow({ course, index, canRemove, onChange, onRemove }: Cour
         </div>
       </div>
 
-      <div className="col-span-6 sm:col-span-4">
+      <div className="col-span-5 sm:col-span-4">
         <div className="flex items-center gap-1">
           <label className="sr-only" htmlFor={`grade-${course.id}`}>
             {`Course ${index + 1} grade`}
