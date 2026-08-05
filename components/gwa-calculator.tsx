@@ -283,12 +283,7 @@ export function GwaCalculator() {
           >
             UP
           </span>
-          <div>
-            <p className="font-serif text-base font-semibold leading-tight sm:text-lg">
-              University of the Philippines
-            </p>
-            <p className="text-xs text-primary-foreground/80">GWA Calculator</p>
-          </div>
+          <p className="font-serif text-lg font-semibold leading-tight sm:text-xl">UP GWA Calculator</p>
         </div>
       </header>
 

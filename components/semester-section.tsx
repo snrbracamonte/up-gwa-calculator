@@ -1,8 +1,9 @@
 'use client'
 
-import { Plus, X } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import {
   classifySemesterHonor,
+  computeGwa,
   formatGwa,
   getSemesterGwa,
   SEMESTER_LABELS,
@@ -47,31 +48,30 @@ export function SemesterSection({
   const hasCourses = semester.courses.length > 0
   const gwa = getSemesterGwa(semester)
   const scholar = classifySemesterHonor(gwa)
+  const stats = computeGwa(semester.courses)
+
+  function handleRemoveClick() {
+    const hasContent = semester.courses.length > 0 || semester.manualGwa !== null
+    if (hasContent && !window.confirm(`Delete ${label} and all its courses? This can't be undone.`)) {
+      return
+    }
+    onRemove()
+  }
 
   return (
     <div className="rounded-xl border border-border bg-secondary/40 p-3 sm:p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <h4 className="font-serif text-base font-semibold text-foreground">{label}</h4>
-        </div>
-        <div className="flex items-center gap-2">
-          {!isManual && (
-            <span className="text-xs text-muted-foreground">
-              Sem GWA{' '}
-              <span className="font-semibold tabular-nums text-foreground">{formatGwa(gwa)}</span>
-            </span>
-          )}
-          {canRemove && (
-            <button
-              type="button"
-              onClick={onRemove}
-              aria-label={`Remove ${label}`}
-              className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-destructive"
-            >
-              <X className="size-4" aria-hidden="true" />
-            </button>
-          )}
-        </div>
+        <h4 className="font-serif text-base font-semibold text-foreground">{label}</h4>
+        {canRemove && (
+          <button
+            type="button"
+            onClick={handleRemoveClick}
+            aria-label={`Remove ${label}`}
+            className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-destructive"
+          >
+            <Trash2 className="size-4" aria-hidden="true" />
+          </button>
+        )}
       </div>
 
       {gwa !== null && scholar.tone !== 'none' && (
@@ -120,6 +120,21 @@ export function SemesterSection({
             )}
             <IskolarImportButton onImport={onImportIskolar} />
           </div>
+
+          {hasCourses && (
+            <div className="mt-3 flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <span>
+                Sem GWA <span className="font-semibold tabular-nums text-foreground">{formatGwa(gwa)}</span>
+              </span>
+              <span>
+                Units <span className="font-semibold tabular-nums text-foreground">{stats.countedUnits}</span>
+              </span>
+              <span>
+                Courses{' '}
+                <span className="font-semibold tabular-nums text-foreground">{stats.countedCourses}</span>
+              </span>
+            </div>
+          )}
         </>
       )}
     </div>

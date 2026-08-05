@@ -1,11 +1,11 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Source_Serif_4 } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
 
-const sourceSerif = Source_Serif_4({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-source-serif',
+  variable: '--font-inter',
   display: 'swap',
 })
 
@@ -35,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`light ${sourceSerif.variable} bg-background`}>
+    <html lang="en" className={`light ${inter.variable} bg-background`}>
       <body className="font-sans antialiased">
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
