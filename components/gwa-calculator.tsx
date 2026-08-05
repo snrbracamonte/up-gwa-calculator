@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useRef, useState, type ChangeEvent } from 'react'
-import { CalendarPlus, Download, RotateCcw, Upload, X } from 'lucide-react'
+import { CalendarPlus, Download, Upload, X } from 'lucide-react'
 import {
   computeCumulativeGwa,
   computeGwa,
@@ -17,8 +17,6 @@ import {
 import { YearSection } from '@/components/year-section'
 import { ResultCard } from '@/components/result-card'
 import { GwaInfoSection } from '@/components/gwa-info-section'
-import { ImportPdfButton } from '@/components/import-pdf-button'
-import { toYears, type ImportResult } from '@/lib/pdf-import'
 import type { IskolarCourse } from '@/lib/iskolar-import'
 import { parseYearsFile, serializeYears } from '@/lib/data-io'
 
@@ -124,13 +122,6 @@ export function GwaCalculator() {
     })
   }
 
-  function reset() {
-    const fresh = initialYears()
-    setYears(fresh)
-    setActiveYearId(fresh[0].id)
-    setImportMessage(null)
-  }
-
   // --- Full-board export/import (JSON) ---
   function handleExport() {
     const json = serializeYears(years)
@@ -172,24 +163,6 @@ export function GwaCalculator() {
     setActiveYearId(parsed.years[0].id)
     const yearWord = parsed.years.length === 1 ? 'year' : 'years'
     setImportMessage({ tone: 'success', text: `Imported ${parsed.years.length} ${yearWord} from file.` })
-  }
-
-  function handleImport(result: ImportResult) {
-    if (result.courseCount === 0) {
-      setImportMessage({ tone: 'warning', text: result.warnings[0] ?? "Couldn't find any courses in that PDF." })
-      return
-    }
-
-    const imported = toYears(result.years, uid)
-    setYears(imported)
-    setActiveYearId(imported[0].id)
-
-    const courseWord = result.courseCount === 1 ? 'course' : 'courses'
-    const yearWord = imported.length === 1 ? 'year' : 'years'
-    setImportMessage({
-      tone: 'success',
-      text: `Imported ${result.courseCount} ${courseWord} across ${imported.length} ${yearWord}. Grades were left blank — fill them in, and double-check units and course types.`,
-    })
   }
 
   function updateYear(yearId: string, updater: (year: Year) => Year) {
@@ -320,65 +293,18 @@ export function GwaCalculator() {
       </header>
 
       <main className="mx-auto max-w-[100rem] px-4 py-8 sm:px-8 sm:py-12">
-        <section className="mb-8 flex flex-wrap items-start justify-between gap-4">
-          <div className="max-w-2xl">
-            <h1 className="text-balance font-serif text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-              Compute your General Weighted Average
-            </h1>
-            <p className="mt-3 text-pretty leading-relaxed text-muted-foreground">
-              Add your courses, enter the units and your final grade on the official UP scale, and
-              instantly see your GWA along with your Latin honors standing. Everything is calculated
-              right in your browser.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleImportDataClick}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-            >
-              <Upload className="size-4" aria-hidden="true" />
-              Import JSON
-            </button>
-            <button
-              type="button"
-              onClick={handleExport}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-            >
-              <Download className="size-4" aria-hidden="true" />
-              Export JSON
-            </button>
-            <input
-              ref={importFileRef}
-              type="file"
-              accept="application/json"
-              className="sr-only"
-              onChange={handleImportDataFile}
-            />
-          </div>
+        <section className="mb-8 max-w-2xl">
+          <h1 className="text-balance font-serif text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            Compute your General Weighted Average
+          </h1>
+          <p className="mt-3 text-pretty leading-relaxed text-muted-foreground">
+            A browser-based GWA calculator built for UP students. Easily compute and track your
+            semestral, yearly, and cumulative GWA, all in one place.
+          </p>
         </section>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className="space-y-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground">
-                Add courses per semester, or enter a known GWA directly. Add semesters or years to
-                build a cumulative GWA.
-              </p>
-              <div className="flex flex-wrap items-center gap-2">
-                <ImportPdfButton onImport={handleImport} />
-                <button
-                  type="button"
-                  onClick={reset}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                >
-                  <RotateCcw className="size-4" aria-hidden="true" />
-                  Reset
-                </button>
-              </div>
-            </div>
-
             {importMessage && (
               <p
                 role="status"
@@ -465,11 +391,38 @@ export function GwaCalculator() {
             )}
           </div>
 
-          <div className="space-y-4 lg:self-start">
-            <div className="lg:sticky lg:top-6">
-              <ResultCard cumulative={cumulative} courseStats={courseStats} manualEntryCount={manualEntryCount} />
-            </div>
+          <div className="space-y-4">
+            <ResultCard cumulative={cumulative} courseStats={courseStats} manualEntryCount={manualEntryCount} />
             <GwaInfoSection />
+
+            <div>
+              <h2 className="mb-3 font-serif text-lg font-semibold text-foreground">Backup your Data</h2>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleImportDataClick}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                >
+                  <Upload className="size-4" aria-hidden="true" />
+                  Import JSON
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExport}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                >
+                  <Download className="size-4" aria-hidden="true" />
+                  Export JSON
+                </button>
+                <input
+                  ref={importFileRef}
+                  type="file"
+                  accept="application/json"
+                  className="sr-only"
+                  onChange={handleImportDataFile}
+                />
+              </div>
+            </div>
           </div>
         </div>
 

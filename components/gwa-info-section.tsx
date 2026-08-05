@@ -78,8 +78,8 @@ const ITEMS: AccordionItem[] = [
         </p>
         <p className="mt-1 text-xs">
           ** Issued when a student with a passing grade misses the final exam or course
-          requirements due to a valid reason (e.g., illness). If the student&rsquo;s standing is
-          already failing, missing the final exam automatically results in a 5.00.
+          requirements due to a valid reason. If the student&rsquo;s standing is already failing,
+          missing the final exam automatically results in a 5.00.
         </p>
       </>
     ),
@@ -132,5 +132,12 @@ const ITEMS: AccordionItem[] = [
 ]
 
 export function GwaInfoSection() {
-  return <InfoAccordion items={ITEMS} />
+  return (
+    <div>
+      <h2 className="mb-3 font-serif text-lg font-semibold text-foreground">
+        Academic Guidelines &amp; Honors Policies
+      </h2>
+      <InfoAccordion items={ITEMS} />
+    </div>
+  )
 }

@@ -27,7 +27,7 @@ export function CourseRow({ course, index, canRemove, onChange, onRemove }: Cour
 
   return (
     <div className="grid grid-cols-12 items-center gap-2 rounded-lg border border-border bg-card p-2 sm:gap-3 sm:p-3">
-      <div className="col-span-12 sm:col-span-6">
+      <div className="col-span-12 sm:col-span-5">
         <label className="sr-only" htmlFor={`name-${course.id}`}>
           {`Course ${index + 1} name`}
         </label>
@@ -78,7 +78,7 @@ export function CourseRow({ course, index, canRemove, onChange, onRemove }: Cour
         </div>
       </div>
 
-      <div className="col-span-4 sm:col-span-2">
+      <div className="col-span-4 sm:col-span-3">
         <label className="sr-only" htmlFor={`type-${course.id}`}>
           {`Course ${index + 1} type`}
         </label>
