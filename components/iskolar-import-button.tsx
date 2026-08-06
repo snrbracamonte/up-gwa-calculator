@@ -102,7 +102,7 @@ export function IskolarImportButton({ onImport }: IskolarImportButtonProps) {
               <button
                 type="button"
                 onClick={close}
-                className="rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                className="rounded-md bg-secondary px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary/70"
               >
                 Cancel
               </button>
@@ -110,7 +110,7 @@ export function IskolarImportButton({ onImport }: IskolarImportButtonProps) {
                 type="button"
                 onClick={handleImportClick}
                 disabled={text.trim() === ''}
-                className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Import
               </button>

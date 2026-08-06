@@ -84,7 +84,7 @@ export function SemesterSection({
         <div className="mt-3">
           <ManualGwaEntryField
             idPrefix={semester.id}
-            label="Sem GWA"
+            label="Semestral GWA"
             value={semester.manualGwa}
             onChange={onManualGwaChange}
             onRemove={onManualGwaRemove}
@@ -112,26 +112,23 @@ export function SemesterSection({
               <Plus className="size-4" aria-hidden="true" />
               Add course
             </button>
+            <IskolarImportButton onImport={onImportIskolar} />
             {!hasCourses && (
               <button type="button" onClick={onManualGwaAdd} className={ACTION_BUTTON_CLASS}>
                 <Plus className="size-4" aria-hidden="true" />
                 Add Semestral GWA
               </button>
             )}
-            <IskolarImportButton onImport={onImportIskolar} />
           </div>
 
           {hasCourses && (
-            <div className="mt-3 flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              <span>
-                Sem GWA <span className="font-semibold tabular-nums text-foreground">{formatGwa(gwa)}</span>
-              </span>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
               <span>
                 Units <span className="font-semibold tabular-nums text-foreground">{stats.countedUnits}</span>
               </span>
               <span>
-                Courses{' '}
-                <span className="font-semibold tabular-nums text-foreground">{stats.countedCourses}</span>
+                Semestral GWA{' '}
+                <span className="font-semibold tabular-nums text-foreground">{formatGwa(gwa)}</span>
               </span>
             </div>
           )}

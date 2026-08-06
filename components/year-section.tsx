@@ -7,6 +7,7 @@ import {
   formatYearLabel,
   getYearGwa,
   SEMESTER_ORDER,
+  yearContribution,
   type Course,
   type ManualGwaEntry,
   type Year,
@@ -60,6 +61,7 @@ export function YearSection({
   const semestersEmpty = year.semesters.every((s) => s.courses.length === 0 && s.manualGwa === null)
   const canAddYearGwa = !isManual && semestersEmpty
   const label = formatYearLabel(year.label)
+  const units = yearContribution(year).units
 
   return (
     <div className="space-y-3">
@@ -67,11 +69,6 @@ export function YearSection({
       <div className="rounded-xl border border-border bg-secondary/40 p-3 sm:p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h4 className="font-serif text-base font-semibold text-foreground">{label}</h4>
-          {!isManual && (
-            <span className="text-xs text-muted-foreground">
-              Year GWA <span className="font-semibold tabular-nums text-foreground">{formatGwa(gwa)}</span>
-            </span>
-          )}
         </div>
 
         {gwa !== null && (
@@ -84,7 +81,7 @@ export function YearSection({
           <div className="mt-3">
             <ManualGwaEntryField
               idPrefix={year.id}
-              label="Year GWA"
+              label="Yearly GWA"
               value={year.manualGwa}
               onChange={onYearManualGwaChange}
               onRemove={onYearManualGwaRemove}
@@ -100,11 +97,22 @@ export function YearSection({
               {canAddYearGwa && (
                 <button type="button" onClick={onYearManualGwaAdd} className={ACTION_BUTTON_CLASS}>
                   <Plus className="size-4" aria-hidden="true" />
-                  Add Year GWA
+                  Add Yearly GWA
                 </button>
               )}
             </div>
           )
+        )}
+
+        {!isManual && hasSemesters && (
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            <span>
+              Units <span className="font-semibold tabular-nums text-foreground">{units}</span>
+            </span>
+            <span>
+              Yearly GWA <span className="font-semibold tabular-nums text-foreground">{formatGwa(gwa)}</span>
+            </span>
+          </div>
         )}
       </div>
 

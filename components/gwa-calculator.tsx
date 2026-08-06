@@ -32,7 +32,7 @@ function uid(prefix: string): string {
 }
 
 function makeCourse(): Course {
-  return { id: uid('course'), name: '', units: '3', grade: '', type: '' }
+  return { id: uid('course'), name: '', units: '', grade: '', type: '' }
 }
 
 function makeSemester(kind: SemesterKind): Semester {
@@ -98,6 +98,8 @@ export function GwaCalculator() {
       years.reduce((sum, y) => sum + y.semesters.filter((s) => s.manualGwa !== null).length, 0),
     [years],
   )
+  const termCount = useMemo(() => years.reduce((sum, y) => sum + y.semesters.length, 0), [years])
+  const yearCount = years.length
 
   const activeYear = years.find((y) => y.id === activeYearId) ?? years[0]
 
@@ -353,7 +355,7 @@ export function GwaCalculator() {
                 type="button"
                 onClick={addYear}
                 aria-label="Add year"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border bg-card px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-secondary"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-secondary px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-secondary/70"
               >
                 <CalendarPlus className="size-4" aria-hidden="true" />
                 Add year
@@ -387,7 +389,13 @@ export function GwaCalculator() {
           </div>
 
           <div className="space-y-4">
-            <ResultCard cumulative={cumulative} courseStats={courseStats} manualEntryCount={manualEntryCount} />
+            <ResultCard
+              cumulative={cumulative}
+              courseStats={courseStats}
+              manualEntryCount={manualEntryCount}
+              termCount={termCount}
+              yearCount={yearCount}
+            />
             <GwaInfoSection />
 
             <div>
@@ -396,7 +404,7 @@ export function GwaCalculator() {
                 <button
                   type="button"
                   onClick={handleImportDataClick}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary/70"
                 >
                   <Upload className="size-4" aria-hidden="true" />
                   Import JSON
@@ -404,7 +412,7 @@ export function GwaCalculator() {
                 <button
                   type="button"
                   onClick={handleExport}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary/70"
                 >
                   <Download className="size-4" aria-hidden="true" />
                   Export JSON
